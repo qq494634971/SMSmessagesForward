@@ -1,11 +1,14 @@
 package com.android.smsmessages;
 
+import android.os.Build;
+import android.util.Log;
+
+import androidx.annotation.RequiresApi;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Headers;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,42 +17,22 @@ import okhttp3.Response;
 
 public class SMSForwardHttpClient {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public static final String DDOPENAPI = "https://oapi.dingtalk.com/robot/send?access_token=%s";
     private static OkHttpClient client = new OkHttpClient();
-    private static String stringBody;
+    private static final String stringBodyFormat = "{\"msgtype\":\"text\",\"text\":{\"content\":\"%s\"},\"at\": {\"isAtAll\": true}}";
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static void SendToDingding(String dingToken, String msgBody) {
-        stringBody = "{\"msgtype\":\"text\",\"text\":{\"content\":\"%s\"}}";
-
-        RequestBody body = RequestBody.create(JSON, String.format(stringBody, msgBody));
-        Request request = new Request.Builder()
-                .url(String.format("https://oapi.dingtalk.com/robot/send?access_token=%s", dingToken))
-                .post(body)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            System.out.println(response.isSuccessful());
-            System.out.println(response.body().string());
-            return;
+        RequestBody body = RequestBody.create(JSON, String.format(stringBodyFormat, msgBody));
+        Request request = new Request.Builder().url(String.format(DDOPENAPI, dingToken)).post(body).build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+            Log.d("DEBUG", "发送内容"+msgBody);
+            Log.d("DEBUG", "responseIsSuccessful="+response.isSuccessful());
+            Log.d("DEBUG", "responseBody"+response.body().string());
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        client.newCall(request).enqueue(new Callback() {
-//            @Override
-//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-//                if (!response.isSuccessful()) {
-//                    throw new IOException("Unexpected code " + response);
-//                }
-//                Headers responseHeaders = response.headers();
-//                for (int i = 0; i < responseHeaders.size(); i++) {
-//                    System.out.println(responseHeaders.name(i) + ": " + responseHeaders.value(i));
-//                }
-//
-//                System.out.println(response.body().string());
-//            }
-//
-//            @Override
-//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 }

@@ -7,14 +7,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 
 public class SMSForwardService extends Service {
     Uri uri = Uri.parse("content://sms");
-    private SQLiteDatabase mDatabase;
+    private String lastMsg;
     private DBHelper mHelper;
 
     @Override
@@ -28,6 +32,7 @@ public class SMSForwardService extends Service {
         mHelper = new DBHelper(this);
         mHelper.initData();
         System.out.println("创建服务");
+        lastMsg = "";
     }
 
     @Override
@@ -62,16 +67,12 @@ public class SMSForwardService extends Service {
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange);
-            final MyApplication application = (MyApplication)getApplication();
             Toast.makeText(getApplicationContext(), "短信数据库发生变化了。。。 ", Toast.LENGTH_SHORT).show();
 
             if (uri.toString().equals("content://sms/raw")) { ////onChange会执行二次,第二次短信才会入库
                 Toast.makeText(getApplicationContext(), "onChange one time", Toast.LENGTH_SHORT).show();
-                return ;
+                return;
             }
-
-            Toast.makeText(getApplicationContext(), "onChange two time", Toast.LENGTH_SHORT).show();
-
             Uri inboxUri = Uri.parse("content://sms/inbox");
             Cursor cursor = getContentResolver().query(inboxUri,
                     new String[]{"body", "address", "date", "type", "_id"}, null,
@@ -79,13 +80,13 @@ public class SMSForwardService extends Service {
             cursor.moveToFirst();
             String body = cursor.getString(0);
             String address = cursor.getString(1);
-            String date = cursor.getString(2);
-            String type = cursor.getString(3);
-            int id = cursor.getInt(4);
+//            String date = cursor.getString(2);
+//            String type = cursor.getString(3);
+//            int id = cursor.getInt(4);
 
-            final String msgString = String.format("[新短信提醒][号码:%s][电量:%s]%s", address, getBatteryScale(), body);
-            Toast.makeText(getApplicationContext(), String.format("%s, type: %s, id: %s", msgString, type, id), Toast.LENGTH_SHORT).show();
+            final String msgString = String.format("[新短信][%s][%s]%s", address, getBatteryScale(), body);
             new Thread(new Runnable() {
+                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                 @Override
                 public void run() {
                     SMSForwardHttpClient.SendToDingding(mHelper.queryData(), msgString);
@@ -94,9 +95,12 @@ public class SMSForwardService extends Service {
         }
     }
 
-    private String getBatteryScale () {
-        BatteryManager batteryManager = (BatteryManager)getSystemService(BATTERY_SERVICE);
-        int battery = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        return battery+"%";
+    private String getBatteryScale() {
+        BatteryManager batteryManager = (BatteryManager) getSystemService(BATTERY_SERVICE);
+        int battery = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            battery = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        }
+        return battery + "%";
     }
 }

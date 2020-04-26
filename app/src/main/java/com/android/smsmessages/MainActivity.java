@@ -4,26 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,24 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
 
-//        //得到ListView
-//        mListView = (ListView) findViewById(R.id.listView);
-//        data = new ArrayList<Map<String, Object>>();
-//        //配置适配置器S
-//        sa = new SimpleAdapter(this, data, android.R.layout.simple_list_item_2,
-//                new String[]{"names", "message"}, new int[]{android.R.id.text1,
-//                android.R.id.text2});
-//        mListView.setAdapter(sa);
-//
-//
-//        bt = (Button) findViewById(R.id.button);
-//        bt.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                query();
-//            }
-//        });
-
         startButton = (Button) findViewById(R.id.start);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,34 +84,4 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-//    private void query() {
-//
-//        //读取所有短信
-//        Uri uri = Uri.parse("content://sms/inbox");
-//        ContentResolver resolver = getContentResolver();
-//        Cursor cursor = resolver.query(uri, new String[]{"_id", "address", "body", "date", "type"}, null, null, null);
-//        if (cursor != null && cursor.getCount() > 0) {
-//            int _id;
-//            String address;
-//            String body;
-//            String date;
-//            int type;
-//            while (cursor.moveToNext()) {
-//                Map<String, Object> map = new HashMap<String, Object>();
-//                _id = cursor.getInt(0);
-//                address = cursor.getString(1);
-//                body = cursor.getString(2);
-//                date = cursor.getString(3);
-//                type = cursor.getInt(4);
-//                map.put("names", body);
-//
-//                Log.i("test", "_id=" + _id + " address=" + address + " body=" + body + " date=" + date + " type=" + type);
-//                data.add(map);
-//                //通知适配器发生改变
-//                sa.notifyDataSetChanged();
-//            }
-//        }
-//    }
-
 }
